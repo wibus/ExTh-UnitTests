@@ -1,25 +1,32 @@
 #include "catch.hpp"
 
-#include <PropRoom3D/Shape/AbstractShape.h>
-#include <PropRoom3D/Shape/SpaceEquation/SpaceEquation.h>
-#include <PropRoom3D/Shape/SpaceEquation/QuadricEquation.h>
+#include <PropRoom3D/Prop/Prop.h>
+
+#include <PropRoom3D/Prop/Costume/Chrome.h>
+
+#include <PropRoom3D/Prop/Volume/Raycast.h>
+#include <PropRoom3D/Prop/Volume/Volume.h>
+#include <PropRoom3D/Prop/Volume/Plane.h>
+#include <PropRoom3D/Prop/Volume/Sphere.h>
+
+
 
 using namespace prop3;
 
-TEST_CASE("Shape/SpaceEquation/Planes/isIn",
+TEST_CASE("Shape/Volume/Planes/isIn",
           "Point position in combinations of the three planes")
 {
-    std::shared_ptr<SpaceEquation> xPalne(
-        new PlaneEquation(glm::dvec3(1, 0, 0), glm::dvec3(0)));
-    std::shared_ptr<SpaceEquation> yPalne(
-        new PlaneEquation(glm::dvec3(0, 1, 0), glm::dvec3(0)));
-    std::shared_ptr<SpaceEquation> zPalne(
-        new PlaneEquation(glm::dvec3(0, 0, 1), glm::dvec3(0)));
+    std::shared_ptr<Volume> xPalne(
+        new Plane(glm::dvec3(1, 0, 0), glm::dvec3(0)));
+    std::shared_ptr<Volume> yPalne(
+        new Plane(glm::dvec3(0, 1, 0), glm::dvec3(0)));
+    std::shared_ptr<Volume> zPalne(
+        new Plane(glm::dvec3(0, 0, 1), glm::dvec3(0)));
 
 
     SECTION("OR combination")
     {
-        std::shared_ptr<SpaceEquation> comb = xPalne | yPalne | zPalne;
+        std::shared_ptr<Volume> comb = xPalne | yPalne | zPalne;
 
 
         // Negative z quadrans
@@ -39,7 +46,7 @@ TEST_CASE("Shape/SpaceEquation/Planes/isIn",
 
     SECTION("AND combination")
     {
-        std::shared_ptr<SpaceEquation> comb = xPalne & yPalne & zPalne;
+        std::shared_ptr<Volume> comb = xPalne & yPalne & zPalne;
 
 
         // Only in quadran
@@ -59,20 +66,20 @@ TEST_CASE("Shape/SpaceEquation/Planes/isIn",
     }
 }
 
-TEST_CASE("Shape/SpaceEquation/Planes/Raycast",
+TEST_CASE("Shape/Volume/Planes/Raycast",
           "Raycasts in combinations of the three planes")
 {
-    std::shared_ptr<SpaceEquation> xPalne(
-        new PlaneEquation(glm::dvec3(1, 0, 0), glm::dvec3(0)));
-    std::shared_ptr<SpaceEquation> yPalne(
-        new PlaneEquation(glm::dvec3(0, 1, 0), glm::dvec3(0)));
-    std::shared_ptr<SpaceEquation> zPalne(
-        new PlaneEquation(glm::dvec3(0, 0, 1), glm::dvec3(0)));
+    std::shared_ptr<Volume> xPalne(
+        new Plane(glm::dvec3(1, 0, 0), glm::dvec3(0)));
+    std::shared_ptr<Volume> yPalne(
+        new Plane(glm::dvec3(0, 1, 0), glm::dvec3(0)));
+    std::shared_ptr<Volume> zPalne(
+        new Plane(glm::dvec3(0, 0, 1), glm::dvec3(0)));
 
 
     SECTION("OR combination")
     {
-        std::shared_ptr<SpaceEquation> comb = xPalne | yPalne | zPalne;
+        std::shared_ptr<Volume> comb = xPalne | yPalne | zPalne;
         std::vector<RaycastReport> reports;
 
 
@@ -109,7 +116,7 @@ TEST_CASE("Shape/SpaceEquation/Planes/Raycast",
 
     SECTION("AND combination")
     {
-        std::shared_ptr<SpaceEquation> comb = xPalne & yPalne & zPalne;
+        std::shared_ptr<Volume> comb = xPalne & yPalne & zPalne;
         std::vector<RaycastReport> reports;
 
 
@@ -145,17 +152,17 @@ TEST_CASE("Shape/SpaceEquation/Planes/Raycast",
     }
 }
 
-TEST_CASE("Shape/SpaceEquation/Spheres/isIn",
+TEST_CASE("Shape/Volume/Spheres/isIn",
           "Point position in combinations of two spheres")
 {
-    std::shared_ptr<SpaceEquation> negSphere(
-        new SphereEquation(glm::dvec3(-1, 0, 0), 2.0));
-    std::shared_ptr<SpaceEquation> posSphere(
-        new SphereEquation(glm::dvec3(1,  0, 0), 2.0));
+    std::shared_ptr<Volume> negSphere(
+        new Sphere(glm::dvec3(-1, 0, 0), 2.0));
+    std::shared_ptr<Volume> posSphere(
+        new Sphere(glm::dvec3(1,  0, 0), 2.0));
 
     SECTION("OR combination")
     {
-        std::shared_ptr<SpaceEquation> comb = negSphere | posSphere;
+        std::shared_ptr<Volume> comb = negSphere | posSphere;
 
         REQUIRE(comb->isIn(-2,  0, -2) == EPointPosition::OUT);
         REQUIRE(comb->isIn(-1,  0, -1) == EPointPosition::IN);
@@ -167,7 +174,7 @@ TEST_CASE("Shape/SpaceEquation/Spheres/isIn",
 
     SECTION("AND combination")
     {
-        std::shared_ptr<SpaceEquation> comb = negSphere & posSphere;
+        std::shared_ptr<Volume> comb = negSphere & posSphere;
 
         REQUIRE(comb->isIn(-2,  0, -2) == EPointPosition::OUT);
         REQUIRE(comb->isIn(-1,  0, -1) == EPointPosition::OUT);
@@ -177,13 +184,13 @@ TEST_CASE("Shape/SpaceEquation/Spheres/isIn",
     }
 }
 
-TEST_CASE("Shape/SpaceEquation/Spheres/Raycast",
+TEST_CASE("Shape/Volume/Spheres/Raycast",
           "Raycasts in combinations of two spheres")
 {
-    std::shared_ptr<SpaceEquation> negSphere(
-        new SphereEquation(glm::dvec3(-1, 0, 0), 2.0));
-    std::shared_ptr<SpaceEquation> posSphere(
-        new SphereEquation(glm::dvec3(1,  0, 0), 2.0));
+    std::shared_ptr<Volume> negSphere(
+        new Sphere(glm::dvec3(-1, 0, 0), 2.0));
+    std::shared_ptr<Volume> posSphere(
+        new Sphere(glm::dvec3(1,  0, 0), 2.0));
 
     Ray xRay(    glm::dvec3( -4,  0,  0), glm::dvec3(1,  0,  0));
     Ray yNegXRay(glm::dvec3( -1,  0,  4), glm::dvec3(0,  0, -1));
@@ -192,7 +199,7 @@ TEST_CASE("Shape/SpaceEquation/Spheres/Raycast",
 
     SECTION("OR combination")
     {
-        std::shared_ptr<SpaceEquation> comb = negSphere | posSphere;
+        std::shared_ptr<Volume> comb = negSphere | posSphere;
         std::vector<RaycastReport> reports;
 
         // Aligned with spheres and x axis
@@ -225,7 +232,7 @@ TEST_CASE("Shape/SpaceEquation/Spheres/Raycast",
 
     SECTION("AND combination")
     {
-        std::shared_ptr<SpaceEquation> comb = negSphere & posSphere;
+        std::shared_ptr<Volume> comb = negSphere & posSphere;
         std::vector<RaycastReport> reports;
 
         // Aligned with spheres and x axis
