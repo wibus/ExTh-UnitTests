@@ -2,31 +2,34 @@
 
 #include <PropRoom3D/Prop/Prop.h>
 
-#include <PropRoom3D/Prop/Costume/Chrome.h>
+#include <PropRoom3D/Prop/Material/Chrome.h>
 
-#include <PropRoom3D/Prop/Volume/Raycast.h>
-#include <PropRoom3D/Prop/Volume/Volume.h>
-#include <PropRoom3D/Prop/Volume/Plane.h>
-#include <PropRoom3D/Prop/Volume/Sphere.h>
-
+#include <PropRoom3D/Prop/ImplicitSurface/ImplicitSurface.h>
+#include <PropRoom3D/Prop/ImplicitSurface/Sphere.h>
+#include <PropRoom3D/Prop/ImplicitSurface/Plane.h>
+#include <PropRoom3D/Prop/Ray/Ray.h>
+#include <PropRoom3D/Prop/Ray/RayHitReport.h>
 
 
 using namespace prop3;
 
-TEST_CASE("Shape/Volume/Planes/isIn",
+typedef std::shared_ptr<ImplicitSurface> pSurf;
+
+
+TEST_CASE("Shape/Surface/Planes/isIn",
           "Point position in combinations of the three planes")
 {
-    std::shared_ptr<Volume> xPalne(
+    pSurf xPalne(
         new Plane(glm::dvec3(1, 0, 0), glm::dvec3(0)));
-    std::shared_ptr<Volume> yPalne(
+    pSurf yPalne(
         new Plane(glm::dvec3(0, 1, 0), glm::dvec3(0)));
-    std::shared_ptr<Volume> zPalne(
+    pSurf zPalne(
         new Plane(glm::dvec3(0, 0, 1), glm::dvec3(0)));
 
 
     SECTION("OR combination")
     {
-        std::shared_ptr<Volume> comb = xPalne | yPalne | zPalne;
+        pSurf comb = xPalne | yPalne | zPalne;
 
 
         // Negative z quadrans
@@ -46,7 +49,7 @@ TEST_CASE("Shape/Volume/Planes/isIn",
 
     SECTION("AND combination")
     {
-        std::shared_ptr<Volume> comb = xPalne & yPalne & zPalne;
+        pSurf comb = xPalne & yPalne & zPalne;
 
 
         // Only in quadran
@@ -66,21 +69,21 @@ TEST_CASE("Shape/Volume/Planes/isIn",
     }
 }
 
-TEST_CASE("Shape/Volume/Planes/Raycast",
+TEST_CASE("Shape/Surface/Planes/Raycast",
           "Raycasts in combinations of the three planes")
 {
-    std::shared_ptr<Volume> xPalne(
+    pSurf xPalne(
         new Plane(glm::dvec3(1, 0, 0), glm::dvec3(0)));
-    std::shared_ptr<Volume> yPalne(
+    pSurf yPalne(
         new Plane(glm::dvec3(0, 1, 0), glm::dvec3(0)));
-    std::shared_ptr<Volume> zPalne(
+    pSurf zPalne(
         new Plane(glm::dvec3(0, 0, 1), glm::dvec3(0)));
 
 
     SECTION("OR combination")
     {
-        std::shared_ptr<Volume> comb = xPalne | yPalne | zPalne;
-        std::vector<RaycastReport> reports;
+        pSurf comb = xPalne | yPalne | zPalne;
+        std::vector<RayHitReport> reports;
 
 
         // Corner intersection
@@ -88,9 +91,9 @@ TEST_CASE("Shape/Volume/Planes/Raycast",
         Ray cRay(glm::dvec3( 1, 1, 1), glm::dvec3(-1,-1,-1));
         comb->raycast(cRay, reports);
         REQUIRE(reports.size() == 3);
-        REQUIRE(reports[0].t == 1.0);
-        REQUIRE(reports[1].t == 1.0);
-        REQUIRE(reports[2].t == 1.0);
+        REQUIRE(reports[0].distance == 1.0);
+        REQUIRE(reports[1].distance == 1.0);
+        REQUIRE(reports[2].distance == 1.0);
         REQUIRE(reports[0].position == glm::dvec3(0));
         REQUIRE(reports[1].position == glm::dvec3(0));
         REQUIRE(reports[2].position == glm::dvec3(0));
@@ -100,8 +103,8 @@ TEST_CASE("Shape/Volume/Planes/Raycast",
         Ray lRay(glm::dvec3( 1, 1, 1), glm::dvec3(-1,-.75,-1));
         comb->raycast(lRay, reports);
         REQUIRE(reports.size() == 2);
-        REQUIRE(reports[0].t == 1.0);
-        REQUIRE(reports[1].t == 1.0);
+        REQUIRE(reports[0].distance == 1.0);
+        REQUIRE(reports[1].distance == 1.0);
         REQUIRE(reports[0].position == glm::dvec3(0, 0.25, 0));
         REQUIRE(reports[1].position == glm::dvec3(0, 0.25, 0));
 
@@ -110,14 +113,14 @@ TEST_CASE("Shape/Volume/Planes/Raycast",
         Ray pRay(glm::dvec3( 1, 1, 2), glm::dvec3(-1,-.75,-1));
         comb->raycast(pRay, reports);
         REQUIRE(reports.size() == 1);
-        REQUIRE(reports[0].t == 1.0);
+        REQUIRE(reports[0].distance == 1.0);
         REQUIRE(reports[0].position == glm::dvec3(0, 0.25, 1));
     }
 
     SECTION("AND combination")
     {
-        std::shared_ptr<Volume> comb = xPalne & yPalne & zPalne;
-        std::vector<RaycastReport> reports;
+        pSurf comb = xPalne & yPalne & zPalne;
+        std::vector<RayHitReport> reports;
 
 
         // Corner intersection
@@ -125,9 +128,9 @@ TEST_CASE("Shape/Volume/Planes/Raycast",
         Ray cRay(glm::dvec3( 1,  1,  1), glm::dvec3(-1,  -1, -1));
         comb->raycast(cRay, reports);
         REQUIRE(reports.size() == 3);
-        REQUIRE(reports[0].t == 1.0);
-        REQUIRE(reports[1].t == 1.0);
-        REQUIRE(reports[2].t == 1.0);
+        REQUIRE(reports[0].distance == 1.0);
+        REQUIRE(reports[1].distance == 1.0);
+        REQUIRE(reports[2].distance == 1.0);
         REQUIRE(reports[0].position == glm::dvec3(0));
         REQUIRE(reports[1].position == glm::dvec3(0));
         REQUIRE(reports[2].position == glm::dvec3(0));
@@ -137,8 +140,8 @@ TEST_CASE("Shape/Volume/Planes/Raycast",
         Ray lRay(glm::dvec3( 0,  1,  1), glm::dvec3(-1,  -1, -1));
         comb->raycast(lRay, reports);
         REQUIRE(reports.size() == 2);
-        REQUIRE(reports[0].t == 1.0);
-        REQUIRE(reports[1].t == 1.0);
+        REQUIRE(reports[0].distance == 1.0);
+        REQUIRE(reports[1].distance == 1.0);
         REQUIRE(reports[0].position == glm::dvec3(-1.0, 0.0, 0));
         REQUIRE(reports[1].position == glm::dvec3(-1.0, 0.0, 0));
 
@@ -147,22 +150,22 @@ TEST_CASE("Shape/Volume/Planes/Raycast",
         Ray pRay(glm::dvec3( 1,  1,  2), glm::dvec3(-1,  -1, -1));
         comb->raycast(pRay, reports);
         REQUIRE(reports.size() == 1);
-        REQUIRE(reports[0].t == 2.0);
+        REQUIRE(reports[0].distance == 2.0);
         REQUIRE(reports[0].position == glm::dvec3(-1, -1, 0));
     }
 }
 
-TEST_CASE("Shape/Volume/Spheres/isIn",
+TEST_CASE("Shape/Surface/Spheres/isIn",
           "Point position in combinations of two spheres")
 {
-    std::shared_ptr<Volume> negSphere(
+    pSurf negSphere(
         new Sphere(glm::dvec3(-1, 0, 0), 2.0));
-    std::shared_ptr<Volume> posSphere(
+    pSurf posSphere(
         new Sphere(glm::dvec3(1,  0, 0), 2.0));
 
     SECTION("OR combination")
     {
-        std::shared_ptr<Volume> comb = negSphere | posSphere;
+        pSurf comb = negSphere | posSphere;
 
         REQUIRE(comb->isIn(-2,  0, -2) == EPointPosition::OUT);
         REQUIRE(comb->isIn(-1,  0, -1) == EPointPosition::IN);
@@ -174,7 +177,7 @@ TEST_CASE("Shape/Volume/Spheres/isIn",
 
     SECTION("AND combination")
     {
-        std::shared_ptr<Volume> comb = negSphere & posSphere;
+        pSurf comb = negSphere & posSphere;
 
         REQUIRE(comb->isIn(-2,  0, -2) == EPointPosition::OUT);
         REQUIRE(comb->isIn(-1,  0, -1) == EPointPosition::OUT);
@@ -184,12 +187,12 @@ TEST_CASE("Shape/Volume/Spheres/isIn",
     }
 }
 
-TEST_CASE("Shape/Volume/Spheres/Raycast",
+TEST_CASE("Shape/Surface/Spheres/Raycast",
           "Raycasts in combinations of two spheres")
 {
-    std::shared_ptr<Volume> negSphere(
+    pSurf negSphere(
         new Sphere(glm::dvec3(-1, 0, 0), 2.0));
-    std::shared_ptr<Volume> posSphere(
+    pSurf posSphere(
         new Sphere(glm::dvec3(1,  0, 0), 2.0));
 
     Ray xRay(    glm::dvec3( -4,  0,  0), glm::dvec3(1,  0,  0));
@@ -199,15 +202,15 @@ TEST_CASE("Shape/Volume/Spheres/Raycast",
 
     SECTION("OR combination")
     {
-        std::shared_ptr<Volume> comb = negSphere | posSphere;
-        std::vector<RaycastReport> reports;
+        pSurf comb = negSphere | posSphere;
+        std::vector<RayHitReport> reports;
 
         // Aligned with spheres and x axis
         reports.clear();
         comb->raycast(xRay, reports);
         REQUIRE(reports.size() == 2);
-        REQUIRE(reports[0].t == 1.0);
-        REQUIRE(reports[1].t == 7.0);
+        REQUIRE(reports[0].distance == 1.0);
+        REQUIRE(reports[1].distance == 7.0);
         REQUIRE(reports[0].position == glm::dvec3(-3, 0, 0));
         REQUIRE(reports[1].position == glm::dvec3( 3, 0, 0));
 
@@ -215,8 +218,8 @@ TEST_CASE("Shape/Volume/Spheres/Raycast",
         reports.clear();
         comb->raycast(yNegXRay, reports);
         REQUIRE(reports.size() == 2);
-        REQUIRE(reports[0].t == 2.0);
-        REQUIRE(reports[1].t == 6.0);
+        REQUIRE(reports[0].distance == 2.0);
+        REQUIRE(reports[1].distance == 6.0);
         REQUIRE(reports[0].position == glm::dvec3(-1, 0, 2));
         REQUIRE(reports[1].position == glm::dvec3(-1, 0,-2));
 
@@ -224,23 +227,23 @@ TEST_CASE("Shape/Volume/Spheres/Raycast",
         reports.clear();
         comb->raycast(yPosXRay, reports);
         REQUIRE(reports.size() == 2);
-        REQUIRE(reports[0].t == 2.0);
-        REQUIRE(reports[1].t == 6.0);
+        REQUIRE(reports[0].distance == 2.0);
+        REQUIRE(reports[1].distance == 6.0);
         REQUIRE(reports[0].position == glm::dvec3( 1, 0,-2));
         REQUIRE(reports[1].position == glm::dvec3( 1, 0, 2));
     }
 
     SECTION("AND combination")
     {
-        std::shared_ptr<Volume> comb = negSphere & posSphere;
-        std::vector<RaycastReport> reports;
+        pSurf comb = negSphere & posSphere;
+        std::vector<RayHitReport> reports;
 
         // Aligned with spheres and x axis
         reports.clear();
         comb->raycast(xRay, reports);
         REQUIRE(reports.size() == 2);
-        REQUIRE(reports[0].t == 5.0);
-        REQUIRE(reports[1].t == 3.0);
+        REQUIRE(reports[0].distance == 5.0);
+        REQUIRE(reports[1].distance == 3.0);
         REQUIRE(reports[0].position == glm::dvec3( 1, 0, 0));
         REQUIRE(reports[1].position == glm::dvec3(-1, 0, 0));
 
@@ -248,14 +251,14 @@ TEST_CASE("Shape/Volume/Spheres/Raycast",
         reports.clear();
         comb->raycast(yNegXRay, reports);
         REQUIRE(reports.size() == 1);
-        REQUIRE(reports[0].t == 4.0);
+        REQUIRE(reports[0].distance == 4.0);
         REQUIRE(reports[0].position == glm::dvec3(-1, 0, 0));
 
         // Aligned with y axis and under positive x sphere
         reports.clear();
         comb->raycast(yPosXRay, reports);
         REQUIRE(reports.size() == 1);
-        REQUIRE(reports[0].t == 4.0);
+        REQUIRE(reports[0].distance == 4.0);
         REQUIRE(reports[0].position == glm::dvec3(1, 0, 0));
     }
 }
